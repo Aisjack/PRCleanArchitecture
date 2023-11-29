@@ -1,0 +1,8 @@
+﻿global using MediatR;
+global using Microsoft.AspNetCore.Mvc;
+global using PerformanceReviewCleanArchitecture.Application.DTOs;
+global using PerformanceReviewCleanArchitecture.Application.Features.CheckinRecords.Command;
+global using PerformanceReviewCleanArchitecture.Application.Features.CheckinRecords.Query;
+global using PerformanceReviewCleanArchitecture.Domain.Entities;
+global using PerformanceReviewCleanArchitecture.Application.Features.Questions.Query;
+global using PerformanceReviewCleanArchitecture.Application.Interfaces.Repositories;

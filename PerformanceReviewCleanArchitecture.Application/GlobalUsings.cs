@@ -1,0 +1,6 @@
+﻿global using Microsoft.Extensions.DependencyInjection;
+global using MediatR;
+global using PerformanceReviewCleanArchitecture.Domain.Entities;
+global using PerformanceReviewCleanArchitecture.Application.Interfaces.Repositories.EntityRepositories;
+global using PerformanceReviewCleanArchitecture.Application.Interfaces.Repositories;
+global using PerformanceReviewCleanArchitecture.Application.DTOs;
