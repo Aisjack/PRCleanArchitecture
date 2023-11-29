@@ -1,0 +1,57 @@
+﻿@page "/login"
+@using PerformanceReview.Models.Entities;
+@using System.ComponentModel.DataAnnotations;
+
+<MudPaper Class="d-flex justify-center pa-4 mt-16" Elevation="0">
+    <MudPaper Class="d-flex flex-column" Width="500px" Elevation="0">
+        <MudText Align="Align.Center" Typo="Typo.h4">Login</MudText>
+
+        <MudForm @ref="@form" Model="@model" @bind-IsValid="@success">
+            <MudTextField @bind-Value="model.Email"
+                          T="string"
+                          Label="Email/User"
+                          Required="true"
+                          RequiredError="User name is required!"
+                          InputType="InputType.Email"
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+
+            <MudTextField @bind-Value="model.Password"
+                          T="string"
+                          Label="Password"
+                          Required="true"
+                          RequiredError="User name is required!"
+                          InputType="@(checkedBoxPass == true ? InputType.Text : InputType.Password)" />
+
+            <MudCheckBox @bind-Checked="checkedBoxPass" Label="Show Password"></MudCheckBox>
+
+        </MudForm>
+        <MudButton Class="ma-5"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning"
+                   DisableElevation="true"
+                   OnClick="@(()=>form.Validate())">Validate</MudButton>
+
+        <MudButton Class="mx-5"
+                   Variant="Variant.Filled"
+                   Color="Color.Warning"
+                   DisableElevation="true"
+                   Disabled="@(!success)"
+                   OnClick="@consoleLog">Log to Console</MudButton>
+
+    </MudPaper>
+</MudPaper>
+
+
+
+@code {
+    bool success;
+    bool checkedBoxPass { get; set; } = false;
+    MudForm form = new();
+    UserLoginDto model = new();
+
+    public void consoleLog()
+    {
+        Console.WriteLine($"{model.Email} {model.Password}");
+    }
+
+}

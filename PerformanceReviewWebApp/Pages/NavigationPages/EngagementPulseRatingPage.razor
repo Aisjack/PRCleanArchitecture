@@ -1,0 +1,127 @@
+﻿@page "/engagementpluserating"
+
+@using PerformanceReview.Models.Dtos;
+@using PerformanceReview.Services;
+@using PerformanceReview.Services.QuestionsServices
+@using PerformanceReview.Services.RatingRecordServices
+@inject IQuestionsService _questionService
+@inject IRatingRecordService _ratingRecordService
+@inject NavigationManager _navigationManager
+
+<MudPaper Class="d-flex align-center" Elevation="0">
+    <MudIcon Class="mr-2" Icon="@Icons.Material.Rounded.TagFaces" Size="Size.Large"></MudIcon>
+    <MudText Typo="Typo.h4">Engagement Pulse Rating</MudText>
+</MudPaper>
+<MudTextField Required InputType="InputType.Number" @bind-Value="UserIdForm" Placeholder="Input User Id Here..."></MudTextField>
+
+<MudGrid Class="pb-16">
+    @foreach(var pair in pairs)
+    {
+            <MudItem xs="12">
+                <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full py-8" Elevation="0">
+                    @pair.QuestionPair
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="5">
+                <MudPaper Class="d-flex flex-column align-center justify-center" Elevation="0">
+                <MudChip Disabled Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" IconColor="Color.Default" Color="Color.Error">Strongly Disagree</MudChip>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="2">
+                <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full" Elevation="0">
+                <MudRating @bind-SelectedValue="pair.AnswerPair"
+                        Color="Color.Warning"
+                        FullIcon="@Icons.Material.Rounded.TagFaces"
+                        EmptyIcon="@Icons.Material.Outlined.TagFaces"
+                        Size="Size.Large" Class="mx-8"></MudRating>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="5">
+                <MudPaper Class="d-flex flex-column align-center justify-center" Elevation="0">
+                <MudChip Disabled OnClose="Closed" CloseIcon="@Icons.Material.Filled.KeyboardDoubleArrowRight" IconColor="Color.Default" Color="Color.Success">Strongly Agree</MudChip>
+                </MudPaper>
+            </MudItem>  
+    }
+</MudGrid>
+<SendRequestButtonComponent sendRequestEvent="sendRequest" />
+
+@*Value Binding Checker*@
+@* @foreach (var pair in pairs)
+{
+    <MudText>@pair.questionPair</MudText>
+    <MudText>@pair.answerPair</MudText>
+}
+ *@
+
+<style>
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
+
+@code {
+    public class questionAnswerPair
+    {
+        public string QuestionIdPair { get; set; } = string.Empty;
+        public string QuestionPair { get; set; } = string.Empty;
+        public int AnswerPair { get; set; }
+    }
+
+    public string UserIdForm { get; set; } = string.Empty;
+    public List<Question>? questions = new();
+    public List<questionAnswerPair> pairs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        List<Question>? questionsOnIntial = await _questionService.GetAllQuestionApi();
+        questions = questionsOnIntial;
+
+        if (questions is null)
+        {
+            throw new Exception("There are no Questions in database.");
+        }
+
+        foreach (var question in questions)
+        {
+            pairs.Add(new questionAnswerPair
+                {
+                    QuestionIdPair = question.Id.ToString(),
+                    QuestionPair = question.Text,
+                    AnswerPair = 0
+                });
+        }
+
+        await Task.CompletedTask;
+    }
+
+    public async void sendRequest()
+    {
+        foreach(var pair in pairs)
+        {
+            var request = new RatingRecordDto
+            {
+                UserId = Convert.ToInt32(UserIdForm),
+                QuestionId = Convert.ToInt32(pair.QuestionIdPair),
+                Rating = Convert.ToInt32(pair.AnswerPair)
+            };
+
+            await _ratingRecordService.RatingRecordRegister(request);
+        }
+
+        _navigationManager.NavigateTo("/");
+        // Console.WriteLine(JsonConvert.SerializeObject(pairs));
+    }
+
+    private void Closed()
+    {
+        
+    }
+}

@@ -1,0 +1,105 @@
+﻿@page "/weeklycheckin"
+
+@inject IQuestionsService _questionService
+@inject ICheckinRecordService _checkinRecordService
+@inject NavigationManager _navigationManager
+
+<MudPaper Class="d-flex align-center" Elevation="0">
+    <MudIcon Class="mr-2" Icon="@Icons.Material.Filled.FactCheck" Size="Size.Large"></MudIcon>
+    <MudText Typo="Typo.h4">Weekly Check-in</MudText>
+</MudPaper>
+<MudTextField Required InputType="InputType.Number" @bind-Value="UserIdForm" Placeholder="Input User Id Here..."></MudTextField>
+
+    <MudPaper Class="d-flex justify-center my-10 p-5" Elevation="0">
+        <MudPaper Class="d-flex flex-column mb-16" Width="1000px" Elevation="0">
+            @foreach (var pair in pairs)
+            {
+                <MudText Typo="Typo.body1">@pair.QuestionPair</MudText>
+                <MudTextField @bind-Value ="pair.AnswerPair"
+                    Required
+                    T="string"
+                    Class="mb-5"
+                    Variant="Variant.Text"
+                    Counter="500"
+                    MaxLength="500"
+                    Immediate="true"
+                    Lines="5" />
+            }
+        </MudPaper>
+    <SendRequestButtonComponent sendRequestEvent="sendRequest" />
+
+    </MudPaper>
+
+@*Value Binding Checker*@
+@* @foreach(var pair in pairs)
+{
+    <MudText>@pair.questionPair</MudText>
+    <MudText>@pair.answerPair</MudText>
+} *@
+
+<style>
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
+
+@code {
+    public class questionAnswerPair
+    {
+        public string QuestionIdPair { get; set; } = string.Empty;
+        public string QuestionPair { get; set; } = string.Empty;
+        public string AnswerPair { get; set; } = string.Empty;
+    }
+
+    public string UserIdForm { get; set; } = string.Empty;
+    public List<Question>? questions = new();
+    public List<questionAnswerPair> pairs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        List<Question>? questionsOnIntial = await _questionService.GetAllQuestionApi();
+        questions = questionsOnIntial;
+
+        if(questions is null)
+        {
+            throw new Exception("There are no Questions in database.");
+        }
+
+        foreach(var question in questions)
+        {
+            pairs.Add(new questionAnswerPair{ 
+                QuestionIdPair = question.Id.ToString(),
+                QuestionPair = question.Text, 
+                AnswerPair = string.Empty });
+        }
+
+        await Task.CompletedTask;
+    }
+
+    public async void sendRequest()
+    {
+        foreach(var pair in pairs)
+        {
+            var request = new CheckinRecordDto
+            {
+                UserId = Convert.ToInt32(UserIdForm),
+                QuestionId = Convert.ToInt32(pair.QuestionIdPair),
+                AnswerText = pair.AnswerPair
+            };
+
+            await _checkinRecordService.CheckinRecordRegister(request);
+        }
+
+        _navigationManager.NavigateTo("/");
+        // Console.WriteLine(JsonConvert.SerializeObject(pairs));
+    }
+
+}
